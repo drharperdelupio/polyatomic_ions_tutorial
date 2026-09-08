@@ -180,16 +180,106 @@
     font-size:.88rem;
     margin-top:12px;
   }
+
+  .name-form{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px;
+    margin:18px 0;
+  }
+  .field label{
+    display:block;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    border:1px solid #aeb7c5;
+    border-radius:9px;
+    padding:12px 13px;
+    font:inherit;
+    color:var(--ink);
+    background:#fff;
+  }
+  .field input:focus{
+    outline:3px solid #93b5ee;
+    outline-offset:1px;
+    border-color:var(--accent);
+  }
+  .form-error{
+    display:none;
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:8px;
+    background:var(--bad-bg);
+    color:#7b2020;
+    border:1px solid #e3b4b4;
+  }
+  .form-error.show{display:block}
+  .certificate{
+    margin:22px auto 6px;
+    padding:34px 28px;
+    border:3px double #677287;
+    background:#fff;
+    text-align:center;
+    max-width:760px;
+  }
+  .certificate .cert-kicker{
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    font-size:.82rem;
+    color:var(--muted);
+    font-weight:700;
+  }
+  .certificate h2{
+    font-family:Georgia, "Times New Roman", serif;
+    font-size:clamp(1.8rem,4vw,2.6rem);
+    margin:10px 0 18px;
+  }
+  .certificate .student-name{
+    font-family:Georgia, "Times New Roman", serif;
+    font-size:clamp(1.6rem,4vw,2.25rem);
+    font-weight:700;
+    margin:16px 0;
+    padding-bottom:8px;
+    border-bottom:1px solid #8d96a5;
+  }
+  .certificate .cert-title{
+    font-size:1.2rem;
+    font-weight:700;
+    margin:12px 0;
+  }
+  .certificate .cert-meta{
+    margin-top:20px;
+    display:flex;
+    justify-content:center;
+    gap:28px;
+    flex-wrap:wrap;
+    color:#3f4855;
+  }
+
   @media (max-width:600px){
     .app{padding:10px}
     .card,.topbar{border-radius:10px}
     .controls{display:grid;grid-template-columns:1fr}
+    .name-form{grid-template-columns:1fr}
     .controls button{width:100%}
   }
   @media print{
+    @page{margin:0.5in}
     body{background:#fff}
-    .topbar,.controls,.options,.footer-note{display:none!important}
-    .card{border:0;box-shadow:none}
+    body *{visibility:hidden!important}
+    #certificate,#certificate *{visibility:visible!important}
+    #certificate{
+      position:absolute;
+      left:0;
+      top:0;
+      width:100%;
+      max-width:none;
+      margin:0;
+      border:3px double #555;
+      box-shadow:none;
+    }
   }
 </style>
 </head>
@@ -363,6 +453,8 @@
   let firstTryCorrect = 0;
   let attempted = 0;
   let currentFirstAttempt = true;
+  let firstName = "";
+  let lastName = "";
 
   const screen = document.getElementById("screen");
   const progressBar = document.getElementById("progressBar");
@@ -386,6 +478,59 @@
   function focusScreen(){
     requestAnimationFrame(() => screen.focus({preventScroll:true}));
     window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function escapeHTML(value){
+    return value.replace(/[&<>"']/g, ch => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    })[ch]);
+  }
+
+  function renderNameEntry(){
+    progressBar.style.width = "0%";
+    progressText.textContent = "Student information";
+    screen.innerHTML = `
+      <span class="tag">Before you begin</span>
+      <h2>Enter your name</h2>
+      <p>Enter your <strong>first and last name</strong> exactly as you want them to appear on your completion certificate.</p>
+      <form id="nameForm" novalidate>
+        <div class="name-form">
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input id="firstName" name="firstName" type="text" autocomplete="given-name" maxlength="50" value="${escapeHTML(firstName)}" required>
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input id="lastName" name="lastName" type="text" autocomplete="family-name" maxlength="50" value="${escapeHTML(lastName)}" required>
+          </div>
+        </div>
+        <div class="form-error" id="nameError" role="alert">Please enter both your first and last name.</div>
+        <div class="controls">
+          <span></span>
+          <button class="primary" type="submit">Begin tutorial</button>
+        </div>
+      </form>
+      <p class="footer-note">Your name is used only on this page and on the certificate generated in your browser.</p>
+    `;
+
+    document.getElementById("nameForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const first = document.getElementById("firstName").value.trim();
+      const last = document.getElementById("lastName").value.trim();
+      const error = document.getElementById("nameError");
+
+      if(!first || !last){
+        error.classList.add("show");
+        (!first ? document.getElementById("firstName") : document.getElementById("lastName")).focus();
+        return;
+      }
+
+      firstName = first;
+      lastName = last;
+      screenIndex = 0;
+      renderIntro();
+      focusScreen();
+    });
   }
 
   function renderIntro(){
@@ -508,57 +653,98 @@
     progressBar.style.width = "100%";
     progressText.textContent = "Complete";
 
-    const mastery = questions.filter(q=>q.mastery);
-    // The final 4 questions occupy indexes 25–28. Their first-try performance is not
-    // separately persisted, so the overall first-try score is shown alongside completion.
-    const pct = Math.round((firstTryCorrect/questions.length)*100);
+    const rawPct = (firstTryCorrect / questions.length) * 100;
+    const pct = Math.round(rawPct);
+    const passed = rawPct >= 80;
+    const safeName = `${escapeHTML(firstName)} ${escapeHTML(lastName)}`;
+    const completionDate = new Date().toLocaleDateString("en-US", {
+      month:"long", day:"numeric", year:"numeric"
+    });
 
-    screen.innerHTML = `
-      <span class="tag">Tutorial complete</span>
-      <h2>Completion summary</h2>
-      <p>You worked through all ${questions.length} checks covering ion terminology, the parentheses rule, and ionic-formula construction.</p>
+    if(passed){
+      screen.innerHTML = `
+        <span class="tag">Tutorial complete</span>
+        <h2>Completion summary</h2>
+        <p><strong>${safeName}</strong>, you met the certificate requirement.</p>
 
-      <div class="scorebox">
-        <div class="mini"><div class="big">${questions.length}/${questions.length}</div><div>eventually correct</div></div>
-        <div class="mini"><div class="big">${firstTryCorrect}/${questions.length}</div><div>correct on first attempt</div></div>
-        <div class="mini"><div class="big">${pct}%</div><div>first-attempt accuracy</div></div>
-      </div>
+        <div class="scorebox">
+          <div class="mini"><div class="big">${firstTryCorrect}/${questions.length}</div><div>correct on first attempt</div></div>
+          <div class="mini"><div class="big">${pct}%</div><div>quiz score</div></div>
+          <div class="mini"><div class="big">Passed</div><div>80% required</div></div>
+        </div>
 
-      <div class="rule">
-        <strong>Take-away rule:</strong> Balance the ion charges first. If a <strong>polyatomic ion</strong> needs an outside subscript greater than 1, place the entire ion in parentheses before writing that subscript.
-      </div>
+        <div class="certificate" id="certificate" aria-label="Certificate of completion">
+          <div class="cert-kicker">Certificate of Completion</div>
+          <h2>Ionic Formula Parentheses Tutorial</h2>
+          <p>This certifies that</p>
+          <div class="student-name">${safeName}</div>
+          <p>successfully completed the tutorial and demonstrated mastery of ionic-formula parentheses.</p>
+          <div class="cert-title">Quiz Score: ${pct}%</div>
+          <div class="cert-meta">
+            <span><strong>Date:</strong> ${completionDate}</span>
+            <span><strong>Passing score:</strong> 80%</span>
+          </div>
+        </div>
 
-      <h3>Examples to keep</h3>
-      <div class="ion-grid">
-        <div class="mini"><span class="formula">KNO<sub>3</sub></span><br>one nitrate: no parentheses</div>
-        <div class="mini"><span class="formula">Mg(OH)<sub>2</sub></span><br>two hydroxides: parentheses</div>
-        <div class="mini"><span class="formula">Al<sub>2</sub>(SO<sub>4</sub>)<sub>3</sub></span><br>three sulfates: parentheses</div>
-        <div class="mini"><span class="formula">CaCl<sub>2</sub></span><br>chloride is monatomic: no parentheses</div>
-      </div>
+        <div class="controls">
+          <button class="secondary" id="retakeBtn">Retake quiz</button>
+          <button class="primary" id="printBtn">Print / Save Certificate as PDF</button>
+        </div>
+        <p class="footer-note">Use your browser's print dialog and choose “Save as PDF” to create the certificate file.</p>
+      `;
+      document.getElementById("retakeBtn").onclick = retakeQuiz;
+      document.getElementById("printBtn").onclick = () => window.print();
+    }else{
+      screen.innerHTML = `
+        <span class="tag">Quiz complete</span>
+        <h2>Retake required</h2>
+        <p><strong>${safeName}</strong>, your first-attempt quiz score was <strong>${pct}%</strong>. A score of <strong>80% or higher</strong> is required for a completion certificate.</p>
 
-      <div class="controls">
-        <button class="secondary" id="restartBtn">Restart tutorial</button>
-        <button class="primary" id="printBtn">Print completion summary</button>
-      </div>
-      <p class="footer-note">Restarting clears the current attempt in this browser tab.</p>
-    `;
-    document.getElementById("restartBtn").onclick = restart;
-    document.getElementById("printBtn").onclick = () => window.print();
+        <div class="scorebox">
+          <div class="mini"><div class="big">${firstTryCorrect}/${questions.length}</div><div>correct on first attempt</div></div>
+          <div class="mini"><div class="big">${pct}%</div><div>quiz score</div></div>
+          <div class="mini"><div class="big">80%</div><div>required</div></div>
+        </div>
+
+        <div class="rule">
+          Review the feedback from the tutorial, then retake the quiz. Your new attempt will begin with a fresh score.
+        </div>
+
+        <div class="controls">
+          <button class="secondary" id="changeNameBtn">Change name</button>
+          <button class="primary" id="retakeBtn">Retake quiz</button>
+        </div>
+      `;
+      document.getElementById("changeNameBtn").onclick = restartAll;
+      document.getElementById("retakeBtn").onclick = retakeQuiz;
+    }
   }
 
-  function restart(){
-    screenIndex=0;
+  function resetAttempt(){
     qIndex=0;
     answered=false;
     correctCount=0;
     firstTryCorrect=0;
     attempted=0;
     currentFirstAttempt=true;
-    renderIntro();
+  }
+
+  function retakeQuiz(){
+    resetAttempt();
+    renderQuestion();
     focusScreen();
   }
 
-  renderIntro();
+  function restartAll(){
+    screenIndex=0;
+    resetAttempt();
+    firstName="";
+    lastName="";
+    renderNameEntry();
+    focusScreen();
+  }
+
+  renderNameEntry();
 })();
 </script>
 </body>
