@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ionic Formula Parentheses Tutorial</title>
+<style>
+  :root{
+    --ink:#18212f;
+    --muted:#5a6472;
+    --line:#d9dee7;
+    --panel:#ffffff;
+    --page:#f5f7fa;
+    --accent:#294f8f;
+    --accent-soft:#eaf0fa;
+    --good:#176b43;
+    --good-bg:#e9f6ef;
+    --bad:#9b2c2c;
+    --bad-bg:#fff0f0;
+    --warn:#7a5200;
+    --warn-bg:#fff7dc;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--page);
+    color:var(--ink);
+    font-family:Arial, Helvetica, sans-serif;
+    line-height:1.5;
+  }
+  .app{
+    width:min(960px, 100%);
+    margin:0 auto;
+    padding:18px;
+  }
+  .topbar{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px;
+    margin-bottom:16px;
+  }
+  h1{font-size:clamp(1.55rem,3vw,2rem);margin:0 0 6px}
+  h2{font-size:1.3rem;margin:0 0 12px}
+  h3{font-size:1.08rem;margin:18px 0 8px}
+  p{margin:8px 0}
+  .muted{color:var(--muted)}
+  .progress-wrap{
+    margin-top:14px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:8px 12px;
+    align-items:center;
+  }
+  .progress{
+    height:12px;
+    background:#e4e8ef;
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .progress > div{
+    height:100%;
+    width:0%;
+    background:var(--accent);
+    transition:width .25s ease;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:clamp(18px,4vw,30px);
+    box-shadow:0 1px 2px rgba(0,0,0,.04);
+  }
+  .formula{
+    font-family:"Times New Roman", Times, serif;
+    font-size:1.45em;
+    white-space:nowrap;
+  }
+  .ion-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
+    margin:14px 0;
+  }
+  .mini{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px;
+    background:#fbfcfe;
+  }
+  .rule{
+    border-left:5px solid var(--accent);
+    background:var(--accent-soft);
+    padding:13px 15px;
+    border-radius:8px;
+    margin:14px 0;
+  }
+  .warning{
+    border-left:5px solid #c38b00;
+    background:var(--warn-bg);
+    padding:13px 15px;
+    border-radius:8px;
+    margin:14px 0;
+  }
+  .question{
+    font-size:1.12rem;
+    margin:4px 0 14px;
+  }
+  .options{
+    display:grid;
+    gap:10px;
+    margin:12px 0;
+  }
+  button{
+    appearance:none;
+    border:1px solid #aeb7c5;
+    background:#fff;
+    color:var(--ink);
+    border-radius:9px;
+    padding:12px 14px;
+    font-size:1rem;
+    cursor:pointer;
+    text-align:left;
+  }
+  button:hover{border-color:var(--accent);background:#f7f9fd}
+  button:focus-visible{outline:3px solid #93b5ee;outline-offset:2px}
+  button.primary{
+    background:var(--accent);
+    color:#fff;
+    border-color:var(--accent);
+    text-align:center;
+    font-weight:700;
+  }
+  button.secondary{
+    background:#fff;
+    text-align:center;
+    font-weight:700;
+  }
+  button:disabled{cursor:default;opacity:.72}
+  .feedback{
+    margin-top:14px;
+    padding:12px 14px;
+    border-radius:9px;
+    display:none;
+  }
+  .feedback.good{display:block;background:var(--good-bg);color:#104e32;border:1px solid #aad6be}
+  .feedback.bad{display:block;background:var(--bad-bg);color:#7b2020;border:1px solid #e3b4b4}
+  .controls{
+    display:flex;
+    gap:10px;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:18px;
+    flex-wrap:wrap;
+  }
+  .controls button{min-width:140px}
+  .tag{
+    display:inline-block;
+    padding:3px 8px;
+    border-radius:999px;
+    background:#eef1f5;
+    color:#46505d;
+    font-size:.85rem;
+    margin-bottom:10px;
+  }
+  .scorebox{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:10px;
+    margin:16px 0;
+  }
+  .scorebox .mini{text-align:center}
+  .big{font-size:1.65rem;font-weight:700}
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+  .footer-note{
+    color:var(--muted);
+    font-size:.88rem;
+    margin-top:12px;
+  }
+  @media (max-width:600px){
+    .app{padding:10px}
+    .card,.topbar{border-radius:10px}
+    .controls{display:grid;grid-template-columns:1fr}
+    .controls button{width:100%}
+  }
+  @media print{
+    body{background:#fff}
+    .topbar,.controls,.options,.footer-note{display:none!important}
+    .card{border:0;box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<main class="app">
+  <section class="topbar" aria-label="Tutorial progress">
+    <h1>Ionic Formula Parentheses Tutorial</h1>
+    <p class="muted">Monatomic and polyatomic ions • cations and anions • when parentheses belong in ionic formulas</p>
+    <div class="progress-wrap">
+      <div class="progress" aria-hidden="true"><div id="progressBar"></div></div>
+      <div id="progressText" aria-live="polite">Introduction</div>
+    </div>
+  </section>
+
+  <section class="card" id="screen" tabindex="-1"></section>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const questions = [
+    // Part 1: terminology (8)
+    {section:"Terminology", prompt:'Classify <span class="formula">Na<sup>+</sup></span>.', options:["monatomic cation","monatomic anion","polyatomic cation","polyatomic anion"], answer:0,
+      explain:"Na⁺ contains one atom and has a positive charge, so it is a monatomic cation."},
+    {section:"Terminology", prompt:'Classify <span class="formula">Cl<sup>−</sup></span>.', options:["monatomic cation","monatomic anion","polyatomic cation","polyatomic anion"], answer:1,
+      explain:"Cl⁻ is one atom with a negative charge: a monatomic anion."},
+    {section:"Terminology", prompt:'Classify <span class="formula">NO<sub>3</sub><sup>−</sup></span>.', options:["monatomic cation","monatomic anion","polyatomic cation","polyatomic anion"], answer:3,
+      explain:"Nitrate contains several atoms bonded together and carries a negative charge, so it is a polyatomic anion."},
+    {section:"Terminology", prompt:'Classify <span class="formula">NH<sub>4</sub><sup>+</sup></span>.', options:["monatomic cation","monatomic anion","polyatomic cation","polyatomic anion"], answer:2,
+      explain:"Ammonium contains more than one atom and carries a positive charge: a polyatomic cation."},
+    {section:"Terminology", prompt:'Classify <span class="formula">Ca<sup>2+</sup></span>.', options:["monatomic cation","monatomic anion","polyatomic cation","polyatomic anion"], answer:0,
+      explain:"Ca²⁺ is a single positively charged atom, so it is a monatomic cation."},
+    {section:"Terminology", prompt:'Classify <span class="formula">SO<sub>4</sub><sup>2−</sup></span>.', options:["monatomic cation","monatomic anion","polyatomic cation","polyatomic anion"], answer:3,
+      explain:"Sulfate is a group of atoms with an overall negative charge: a polyatomic anion."},
+    {section:"Terminology", prompt:'Classify <span class="formula">OH<sup>−</sup></span>.', options:["monatomic cation","monatomic anion","polyatomic cation","polyatomic anion"], answer:3,
+      explain:"Hydroxide contains O and H and has an overall −1 charge, so it is a polyatomic anion."},
+    {section:"Terminology", prompt:'Classify <span class="formula">Al<sup>3+</sup></span>.', options:["monatomic cation","monatomic anion","polyatomic cation","polyatomic anion"], answer:0,
+      explain:"Al³⁺ is a single positively charged atom: a monatomic cation."},
+
+    // Part 2: parentheses decisions (8)
+    {section:"Parentheses rule", prompt:'A formula needs <strong>two nitrate ions</strong>, <span class="formula">NO<sub>3</sub><sup>−</sup></span>. Are parentheses needed?', options:["Yes","No"], answer:0,
+      explain:"Yes. When more than one copy of a polyatomic ion is needed, put the whole ion in parentheses before adding the outside subscript: (NO₃)₂."},
+    {section:"Parentheses rule", prompt:'A formula needs <strong>one nitrate ion</strong>, <span class="formula">NO<sub>3</sub><sup>−</sup></span>. Are parentheses needed?', options:["Yes","No"], answer:1,
+      explain:"No. A single polyatomic ion does not need parentheses: NaNO₃, not Na(NO₃)."},
+    {section:"Parentheses rule", prompt:'A formula needs <strong>two hydroxide ions</strong>, <span class="formula">OH<sup>−</sup></span>. Are parentheses needed?', options:["Yes","No"], answer:0,
+      explain:"Yes. Two hydroxide ions are written (OH)₂ so that the subscript 2 applies to the entire OH group."},
+    {section:"Parentheses rule", prompt:'A formula needs <strong>one hydroxide ion</strong>, <span class="formula">OH<sup>−</sup></span>. Are parentheses needed?', options:["Yes","No"], answer:1,
+      explain:"No. With only one hydroxide ion, write the group directly: KOH."},
+    {section:"Parentheses rule", prompt:'A formula needs <strong>three sulfate ions</strong>, <span class="formula">SO<sub>4</sub><sup>2−</sup></span>. Are parentheses needed?', options:["Yes","No"], answer:0,
+      explain:"Yes. More than one sulfate ion requires parentheses, as in Al₂(SO₄)₃."},
+    {section:"Parentheses rule", prompt:'A formula needs <strong>one sulfate ion</strong>, <span class="formula">SO<sub>4</sub><sup>2−</sup></span>. Are parentheses needed?', options:["Yes","No"], answer:1,
+      explain:"No. One sulfate group is written without parentheses, as in CaSO₄."},
+    {section:"Parentheses rule", prompt:'A formula needs <strong>two ammonium ions</strong>, <span class="formula">NH<sub>4</sub><sup>+</sup></span>. Are parentheses needed?', options:["Yes","No"], answer:0,
+      explain:"Yes. Ammonium is polyatomic, so two ammonium ions are written (NH₄)₂."},
+    {section:"Parentheses rule", prompt:'A formula needs <strong>two chloride ions</strong>, <span class="formula">Cl<sup>−</sup></span>. Are parentheses needed around Cl?', options:["Yes","No"], answer:1,
+      explain:"No. Chloride is monatomic. Parentheses are used to preserve a multi-atom ion as a unit, not around a single atom. Write CaCl₂, not Ca(Cl)₂."},
+
+    // Part 3: formula selection (9)
+    {section:"Build the formula", prompt:'Choose the correct formula for calcium nitrate. Ions: <span class="formula">Ca<sup>2+</sup></span> and <span class="formula">NO<sub>3</sub><sup>−</sup></span>.', options:["CaNO₃","Ca(NO₃)₂","Ca₂NO₃","Ca₂(NO₃)"], answer:1,
+      explain:"One Ca²⁺ requires two NO₃⁻ ions for charge balance. Because nitrate is polyatomic and appears twice, use parentheses: Ca(NO₃)₂."},
+    {section:"Build the formula", prompt:'Choose the correct formula for sodium sulfate. Ions: <span class="formula">Na<sup>+</sup></span> and <span class="formula">SO<sub>4</sub><sup>2−</sup></span>.', options:["NaSO₄","Na₂SO₄","Na(SO₄)₂","Na₂(SO₄)"], answer:1,
+      explain:"Two Na⁺ ions balance one SO₄²⁻ ion. Since sulfate appears only once, no parentheses are needed: Na₂SO₄."},
+    {section:"Build the formula", prompt:'Choose the correct formula for aluminum hydroxide. Ions: <span class="formula">Al<sup>3+</sup></span> and <span class="formula">OH<sup>−</sup></span>.', options:["AlOH₃","Al(OH)₃","Al₃OH","Al₃(OH)"], answer:1,
+      explain:"Three OH⁻ ions balance Al³⁺. The subscript 3 applies to the entire hydroxide ion, so write Al(OH)₃."},
+    {section:"Build the formula", prompt:'Choose the correct formula for ammonium carbonate. Ions: <span class="formula">NH<sub>4</sub><sup>+</sup></span> and <span class="formula">CO<sub>3</sub><sup>2−</sup></span>.', options:["NH₄CO₃","(NH₄)₂CO₃","NH₄(CO₃)₂","NH₈CO₃"], answer:1,
+      explain:"Two NH₄⁺ ions are required for one CO₃²⁻ ion. Because ammonium is polyatomic and appears twice, write (NH₄)₂CO₃."},
+    {section:"Build the formula", prompt:'Choose the correct formula for magnesium phosphate. Ions: <span class="formula">Mg<sup>2+</sup></span> and <span class="formula">PO<sub>4</sub><sup>3−</sup></span>.', options:["MgPO₄","Mg₂(PO₄)₃","Mg₃(PO₄)₂","Mg₃PO₈"], answer:2,
+      explain:"The lowest whole-number charge balance is 3 Mg²⁺ (+6) and 2 PO₄³⁻ (−6). Two phosphate ions require parentheses: Mg₃(PO₄)₂."},
+    {section:"Build the formula", prompt:'Choose the correct formula for potassium nitrate. Ions: <span class="formula">K<sup>+</sup></span> and <span class="formula">NO<sub>3</sub><sup>−</sup></span>.', options:["KNO₃","K(NO₃)","K₂NO₃","K(NO₃)₂"], answer:0,
+      explain:"K⁺ and NO₃⁻ combine 1:1. A single nitrate ion does not need parentheses: KNO₃."},
+    {section:"Build the formula", prompt:'Choose the correct formula for calcium chloride. Ions: <span class="formula">Ca<sup>2+</sup></span> and <span class="formula">Cl<sup>−</sup></span>.', options:["CaCl","CaCl₂","Ca(Cl)₂","Ca₂Cl"], answer:1,
+      explain:"Two chloride ions balance Ca²⁺, but chloride is monatomic, so no parentheses are used: CaCl₂."},
+    {section:"Build the formula", prompt:'Choose the correct formula for aluminum sulfate. Ions: <span class="formula">Al<sup>3+</sup></span> and <span class="formula">SO<sub>4</sub><sup>2−</sup></span>.', options:["AlSO₄","Al₂SO₄₃","Al₂(SO₄)₃","Al₃(SO₄)₂"], answer:2,
+      explain:"2 Al³⁺ gives +6 and 3 SO₄²⁻ gives −6. Three sulfate ions require parentheses: Al₂(SO₄)₃."},
+    {section:"Build the formula", prompt:'Choose the correct formula for ammonium chloride. Ions: <span class="formula">NH<sub>4</sub><sup>+</sup></span> and <span class="formula">Cl<sup>−</sup></span>.', options:["(NH₄)Cl","NH₄Cl","NH(Cl)₄","(NH₄)₂Cl"], answer:1,
+      explain:"The ions combine 1:1. Only one ammonium ion is present, so no parentheses are needed: NH₄Cl."},
+
+    // Part 4: mastery (4)
+    {section:"Mastery check", mastery:true, prompt:'Which statement is correct?', options:[
+      "Parentheses are required around every polyatomic ion.",
+      "Parentheses are used when a polyatomic ion appears more than once in a formula.",
+      "Parentheses are used whenever an ion has a charge greater than 1.",
+      "Parentheses are required around monatomic ions when their subscript is greater than 1."
+    ], answer:1, explain:"Parentheses group a polyatomic ion when an outside subscript must apply to the entire ion."},
+    {section:"Mastery check", mastery:true, prompt:'Which formula correctly represents magnesium hydroxide?', options:["MgOH₂","Mg(OH)₂","Mg₂OH","Mg₂(OH)"], answer:1,
+      explain:"Mg²⁺ requires two OH⁻ ions. Hydroxide is polyatomic, so two copies are written Mg(OH)₂."},
+    {section:"Mastery check", mastery:true, prompt:'Which formula correctly represents calcium phosphate?', options:["CaPO₄","Ca₂(PO₄)₃","Ca₃(PO₄)₂","Ca₃PO₈"], answer:2,
+      explain:"3 Ca²⁺ gives +6 and 2 PO₄³⁻ gives −6. Two phosphate ions require parentheses: Ca₃(PO₄)₂."},
+    {section:"Mastery check", mastery:true, prompt:'Why is there no pair of parentheses in <span class="formula">Na<sub>2</sub>SO<sub>4</sub></span>?', options:[
+      "Sulfate is monatomic.",
+      "Sodium is polyatomic.",
+      "Only one sulfate ion is present in the formula unit.",
+      "Parentheses are never used for anions."
+    ], answer:2, explain:"Sulfate is polyatomic, but only one sulfate ion is needed. Parentheses are unnecessary unless more than one copy of the polyatomic ion is present."}
+  ];
+
+  const introScreens = [
+    {
+      tag:"Introduction",
+      title:"What you will learn",
+      body:`
+        <p>By the end of this tutorial, you should be able to:</p>
+        <ul>
+          <li>distinguish <strong>monatomic</strong> ions from <strong>polyatomic</strong> ions,</li>
+          <li>identify <strong>cations</strong> and <strong>anions</strong>,</li>
+          <li>decide when parentheses are required in an ionic formula, and</li>
+          <li>write formulas containing common polyatomic ions without changing the identity of the ion.</li>
+        </ul>
+        <div class="rule"><strong>Central idea:</strong> Parentheses do not mean “ionic.” They mean that an outside subscript applies to an entire <em>polyatomic ion</em>.</div>
+      `
+    },
+    {
+      tag:"Concept 1",
+      title:"Monatomic and polyatomic ions",
+      body:`
+        <p>An <strong>ion</strong> is a particle with a net electrical charge.</p>
+        <div class="ion-grid">
+          <div class="mini"><strong>Monatomic ion</strong><br>one atom carrying a charge<br><span class="formula">Na<sup>+</sup>, Ca<sup>2+</sup>, Cl<sup>−</sup></span></div>
+          <div class="mini"><strong>Polyatomic ion</strong><br>two or more bonded atoms carrying an overall charge<br><span class="formula">NO<sub>3</sub><sup>−</sup>, OH<sup>−</sup>, SO<sub>4</sub><sup>2−</sup>, NH<sub>4</sub><sup>+</sup></span></div>
+        </div>
+        <p>A polyatomic ion behaves as a <strong>single charged unit</strong> when it forms an ionic compound.</p>
+      `
+    },
+    {
+      tag:"Concept 2",
+      title:"Cations and anions",
+      body:`
+        <div class="ion-grid">
+          <div class="mini"><strong>Cation</strong><br>positively charged ion<br><span class="formula">Na<sup>+</sup>, Ca<sup>2+</sup>, NH<sub>4</sub><sup>+</sup></span></div>
+          <div class="mini"><strong>Anion</strong><br>negatively charged ion<br><span class="formula">Cl<sup>−</sup>, NO<sub>3</sub><sup>−</sup>, SO<sub>4</sub><sup>2−</sup></span></div>
+        </div>
+        <p>The words <em>monatomic/polyatomic</em> tell you <strong>how many atoms</strong> are in the ion. The words <em>cation/anion</em> tell you the <strong>sign of its charge</strong>.</p>
+      `
+    },
+    {
+      tag:"Concept 3",
+      title:"The parentheses rule",
+      body:`
+        <div class="rule">
+          <strong>Use parentheses only when both conditions are true:</strong>
+          <ol>
+            <li>the ion is <strong>polyatomic</strong>, and</li>
+            <li>the formula needs <strong>more than one</strong> copy of that ion.</li>
+          </ol>
+        </div>
+        <p>Example: calcium nitrate contains <span class="formula">Ca<sup>2+</sup></span> and <span class="formula">NO<sub>3</sub><sup>−</sup></span>. Two nitrates are needed to balance one calcium ion:</p>
+        <p class="formula">Ca(NO<sub>3</sub>)<sub>2</sub></p>
+        <p>The outside subscript 2 multiplies the <strong>entire nitrate ion</strong>.</p>
+      `
+    },
+    {
+      tag:"Concept 4",
+      title:"What parentheses do — and do not do",
+      body:`
+        <p>Compare these formulas:</p>
+        <div class="ion-grid">
+          <div class="mini"><span class="formula">NaNO<sub>3</sub></span><br>one nitrate → no parentheses</div>
+          <div class="mini"><span class="formula">Ca(NO<sub>3</sub>)<sub>2</sub></span><br>two nitrates → parentheses</div>
+          <div class="mini"><span class="formula">CaCl<sub>2</sub></span><br>two chlorides, but Cl<sup>−</sup> is monatomic → no parentheses</div>
+        </div>
+        <div class="warning"><strong>Do not change the subscripts inside a polyatomic ion.</strong> Nitrate stays NO<sub>3</sub><sup>−</sup>. Writing something such as NO<sub>6</sub> would create a different composition rather than two nitrate ions.</div>
+      `
+    }
+  ];
+
+  let screenIndex = 0;
+  let qIndex = 0;
+  let answered = false;
+  let correctCount = 0;
+  let firstTryCorrect = 0;
+  let attempted = 0;
+  let currentFirstAttempt = true;
+
+  const screen = document.getElementById("screen");
+  const progressBar = document.getElementById("progressBar");
+  const progressText = document.getElementById("progressText");
+
+  function totalSteps(){
+    return introScreens.length + questions.length + 1;
+  }
+
+  function currentStepNumber(){
+    if(screenIndex < introScreens.length) return screenIndex + 1;
+    return introScreens.length + qIndex + 1;
+  }
+
+  function updateProgress(label){
+    const pct = Math.min(100, ((currentStepNumber()-1) / (totalSteps()-1))*100);
+    progressBar.style.width = pct + "%";
+    progressText.textContent = label;
+  }
+
+  function focusScreen(){
+    requestAnimationFrame(() => screen.focus({preventScroll:true}));
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function renderIntro(){
+    const s = introScreens[screenIndex];
+    updateProgress(`Learn ${screenIndex+1} of ${introScreens.length}`);
+    screen.innerHTML = `
+      <span class="tag">${s.tag}</span>
+      <h2>${s.title}</h2>
+      ${s.body}
+      <div class="controls">
+        <button class="secondary" id="backBtn" ${screenIndex===0?"disabled":""}>Back</button>
+        <button class="primary" id="nextBtn">${screenIndex===introScreens.length-1?"Start practice":"Continue"}</button>
+      </div>
+      <p class="footer-note">This tutorial is an original instructional replacement covering the same concepts as the unavailable activity.</p>
+    `;
+    document.getElementById("backBtn").onclick = () => {
+      if(screenIndex>0){ screenIndex--; renderIntro(); focusScreen(); }
+    };
+    document.getElementById("nextBtn").onclick = () => {
+      screenIndex++;
+      if(screenIndex < introScreens.length) renderIntro();
+      else { qIndex=0; renderQuestion(); }
+      focusScreen();
+    };
+  }
+
+  function renderQuestion(){
+    answered = false;
+    currentFirstAttempt = true;
+    const q = questions[qIndex];
+    const sectionStarts = {
+      0:"Practice 1: classify ions",
+      8:"Practice 2: decide on parentheses",
+      16:"Practice 3: build ionic formulas",
+      25:"Final mastery check"
+    };
+    const label = sectionStarts[qIndex] || q.section;
+    updateProgress(`${qIndex+1} of ${questions.length} checks`);
+
+    const optionHTML = q.options.map((opt,i)=>
+      `<button class="option" data-index="${i}">${String.fromCharCode(65+i)}. ${opt}</button>`
+    ).join("");
+
+    screen.innerHTML = `
+      <span class="tag">${label}</span>
+      <h2>${q.section}</h2>
+      <div class="question">${q.prompt}</div>
+      <div class="options" id="options" role="group" aria-label="Answer choices">${optionHTML}</div>
+      <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+      <div class="controls">
+        <button class="secondary" id="reviewBtn">Review rule</button>
+        <button class="primary" id="nextQBtn" style="display:none">${qIndex===questions.length-1?"See results":"Next question"}</button>
+      </div>
+      <p class="footer-note">Incorrect answers can be retried. Feedback explains the reasoning rather than only marking the choice.</p>
+    `;
+
+    document.querySelectorAll(".option").forEach(btn=>{
+      btn.addEventListener("click", () => grade(Number(btn.dataset.index)));
+    });
+    document.getElementById("reviewBtn").onclick = showRule;
+    document.getElementById("nextQBtn").onclick = () => {
+      if(qIndex < questions.length-1){
+        qIndex++;
+        renderQuestion();
+      }else{
+        renderResults();
+      }
+      focusScreen();
+    };
+  }
+
+  function grade(choice){
+    const q = questions[qIndex];
+    const feedback = document.getElementById("feedback");
+    const buttons = [...document.querySelectorAll(".option")];
+
+    if(!answered && currentFirstAttempt) attempted++;
+
+    if(choice === q.answer){
+      if(!answered){
+        correctCount++;
+        if(currentFirstAttempt) firstTryCorrect++;
+      }
+      answered = true;
+      buttons.forEach((b,i)=>{
+        b.disabled = true;
+        if(i===q.answer) b.setAttribute("aria-label", b.textContent + " — correct");
+      });
+      feedback.className = "feedback good";
+      feedback.innerHTML = `<strong>Correct.</strong> ${q.explain}`;
+      document.getElementById("nextQBtn").style.display = "";
+    }else{
+      currentFirstAttempt = false;
+      feedback.className = "feedback bad";
+      feedback.innerHTML = `<strong>Not quite.</strong> ${targetedHint(qIndex, choice)} Try again.`;
+      buttons[choice].disabled = true;
+    }
+  }
+
+  function targetedHint(index, choice){
+    if(index < 8){
+      return "Check two features separately: how many atoms are in the ion, and whether its charge is positive or negative.";
+    }
+    if(index < 16){
+      return "Ask: Is this ion polyatomic? If so, is more than one copy needed? Parentheses are required only when both answers are yes.";
+    }
+    if(index < 25){
+      return "First balance the total positive and negative charge. Then use parentheses only if a polyatomic ion receives a subscript greater than 1.";
+    }
+    return "Use the same two-step test: balance charge first, then decide whether an outside subscript must apply to an entire polyatomic ion.";
+  }
+
+  function showRule(){
+    const box = document.getElementById("feedback");
+    box.className = "feedback good";
+    box.innerHTML = `<strong>Rule reminder:</strong> Parentheses are used when a <strong>polyatomic ion</strong> occurs <strong>more than once</strong> in the formula. A single polyatomic ion needs no parentheses, and monatomic ions do not need parentheses.`;
+  }
+
+  function renderResults(){
+    progressBar.style.width = "100%";
+    progressText.textContent = "Complete";
+
+    const mastery = questions.filter(q=>q.mastery);
+    // The final 4 questions occupy indexes 25–28. Their first-try performance is not
+    // separately persisted, so the overall first-try score is shown alongside completion.
+    const pct = Math.round((firstTryCorrect/questions.length)*100);
+
+    screen.innerHTML = `
+      <span class="tag">Tutorial complete</span>
+      <h2>Completion summary</h2>
+      <p>You worked through all ${questions.length} checks covering ion terminology, the parentheses rule, and ionic-formula construction.</p>
+
+      <div class="scorebox">
+        <div class="mini"><div class="big">${questions.length}/${questions.length}</div><div>eventually correct</div></div>
+        <div class="mini"><div class="big">${firstTryCorrect}/${questions.length}</div><div>correct on first attempt</div></div>
+        <div class="mini"><div class="big">${pct}%</div><div>first-attempt accuracy</div></div>
+      </div>
+
+      <div class="rule">
+        <strong>Take-away rule:</strong> Balance the ion charges first. If a <strong>polyatomic ion</strong> needs an outside subscript greater than 1, place the entire ion in parentheses before writing that subscript.
+      </div>
+
+      <h3>Examples to keep</h3>
+      <div class="ion-grid">
+        <div class="mini"><span class="formula">KNO<sub>3</sub></span><br>one nitrate: no parentheses</div>
+        <div class="mini"><span class="formula">Mg(OH)<sub>2</sub></span><br>two hydroxides: parentheses</div>
+        <div class="mini"><span class="formula">Al<sub>2</sub>(SO<sub>4</sub>)<sub>3</sub></span><br>three sulfates: parentheses</div>
+        <div class="mini"><span class="formula">CaCl<sub>2</sub></span><br>chloride is monatomic: no parentheses</div>
+      </div>
+
+      <div class="controls">
+        <button class="secondary" id="restartBtn">Restart tutorial</button>
+        <button class="primary" id="printBtn">Print completion summary</button>
+      </div>
+      <p class="footer-note">Restarting clears the current attempt in this browser tab.</p>
+    `;
+    document.getElementById("restartBtn").onclick = restart;
+    document.getElementById("printBtn").onclick = () => window.print();
+  }
+
+  function restart(){
+    screenIndex=0;
+    qIndex=0;
+    answered=false;
+    correctCount=0;
+    firstTryCorrect=0;
+    attempted=0;
+    currentFirstAttempt=true;
+    renderIntro();
+    focusScreen();
+  }
+
+  renderIntro();
+})();
+</script>
+</body>
+</html>
